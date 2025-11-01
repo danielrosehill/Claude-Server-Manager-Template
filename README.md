@@ -1,6 +1,24 @@
 # Claude Server Manager Template
 
-A template repository for deploying Claude Code configuration to home servers. Some of the context is a little specific to my actual environment and home server purpose. But the template/pattern should be reasonably adaptable with a few edits. 
+[![Claude Code](https://img.shields.io/badge/Claude%20Code-Project-8A2BE2?style=flat&logo=anthropic)](https://github.com/anthropics/claude-code)
+[![Claude Code Projects Index](https://img.shields.io/badge/Claude%20Code-Projects%20Index-blue?style=flat)](https://github.com/danielrosehill/Claude-Code-Repos-Index)
+[![Master Index](https://img.shields.io/badge/GitHub-Master%20Index-green?style=flat&logo=github)](https://github.com/danielrosehill/Github-Master-Index)
+
+A template repository for deploying Claude Code configuration to home servers. This template was created based on my specific server environment and use cases, so you'll want to customize it for your own setup.
+
+## Customization Required
+
+**Important:** This repository provides a pattern and starting point - it should not be deployed without customization. It was created based on my specific server environment and is intended as a model to demonstrate the approach.
+
+Before deploying, you will need to:
+
+- **Tailor `CLAUDE.md`** - Rewrite this file entirely for your environment. Include your server's purpose, hardware specs, services, directory structures, and specific use cases. This file is what gives Claude context about YOUR system.
+- **Remove many slash commands** - The 38 included commands are specific to my setup. Review them carefully and remove those that don't apply to your environment. Keep or adapt only what's relevant.
+- **Update network details** - IP addresses (10.0.0.x), LAN structure, and services references are specific to my network.
+- **Adjust resource context** - References to low-spec hardware (i3 CPU, GTX 1050Ti) and resource conservation should be updated or removed based on your actual hardware.
+- **Modify directory paths** - Update paths for Docker deployments, backups, and other services to match your filesystem organization.
+
+This repository demonstrates the pattern of creating a comprehensive Claude Code environment for server administration. Use it as a reference and starting point, but customize it thoroughly for your own needs.
 
 ## Purpose
 
@@ -9,7 +27,6 @@ This template provides a comprehensive Claude Code environment optimized for ser
 - Custom `CLAUDE.md` with server-specific context and instructions
 - **38 slash commands** for routine system administration tasks
 - **10 specialized agents** for complex management workflows
-- A logbook submodule for documentation and troubleshooting notes
 - Hardware profiling directory structure
 
 ### Key Features
@@ -24,41 +41,85 @@ This template provides a comprehensive Claude Code environment optimized for ser
 
 ## Deployment Model
 
-The intended deployment is to clone this repository directly to `~` (home directory) on your managed server. This places all configuration files at the root level where Claude Code expects them:
+Clone this repository anywhere on your managed server, then use the provided sync scripts to deploy the configuration files where Claude Code expects them.
+
+### Quick Start
 
 ```bash
-# On your managed server:
-cd ~
-git clone <this-repo> claude-server-config
-cd claude-server-config
-cp -r .claude CLAUDE.md env.md ~/
+# 1. Clone the repository
+cd ~/repos/github  # or wherever you keep repositories
+git clone https://github.com/danielrosehill/Claude-Server-Manager-Template.git
+cd Claude-Server-Manager-Template
+
+# 2. Deploy the template files
+# Choose your deployment method:
+
+# Option A: Sync to home directory only
+./sync-to-home.sh
+
+# Option B: Sync to both home directory AND / (requires sudo)
+./sync-to-home-and-root.sh
+
+# 3. Run the setup wizard
+claude  # Start Claude Code
+# Then run: /claude-setup
 ```
 
-Or use rsync for deployment:
-```bash
-# From your local machine:
-rsync -av --exclude='.git' ./ user@server:~/
-```
+**Important First Step:** After deploying, run the `/claude-setup` slash command. This interactive wizard will ask you questions about your environment and help you:
+- Customize `CLAUDE.md` for your server
+- Remove irrelevant slash commands
+- Identify which agents to keep or remove
+- Update network references and paths
+- Tailor the entire configuration to your needs
 
-When Claude Code CLI is run from `~` on the remote server, it will automatically have access to:
-- `CLAUDE.md` - Server-specific context and instructions
-- `.claude/commands/` - Slash command library
-- `.claude/` - Agent configurations and settings
+Don't skip this step - the template is designed to be heavily customized!
+
+### Deployment Options
+
+**Option A: `sync-to-home.sh`**
+- Deploys to `~/CLAUDE.md` and `~/.claude/`
+- No sudo required
+- Use when Claude Code will be run from your home directory
+- Creates symlink for `~/hw-profile` to the repository
+
+**Option B: `sync-to-home-and-root.sh`**
+- Deploys to both `~` and `/` (filesystem root)
+- Requires sudo for copying to `/`
+- Use when you want Claude Code available system-wide
+- Useful for running Claude Code with elevated privileges
+- Creates configuration at `/CLAUDE.md` and `/.claude/`
+- Creates `hw-profile` symlinks for both locations
+
+### How It Works
+
+The sync scripts:
+1. Copy `CLAUDE.md` and `.claude/` from the repository to the target location(s)
+2. Use `rsync --delete` to ensure `.claude/` stays in sync
+3. Create symlinks for `hw-profile/` directory back to the repository
+4. Can be run repeatedly to update the configuration after making changes
+
+This approach allows you to:
+- Keep the repository under version control in a normal location
+- Update configurations by editing the repo and re-running the sync script
+- Maintain separation between the repository and deployment locations
+- Use Git workflows (branches, PRs) for configuration management
 
 ### Setup Steps
 
-1. Deploy the configuration files to `~` on your target server (as shown above)
-2. Ensure Claude Code CLI is installed and authenticated on the server
-3. For maximally permissive configuration, add `/` to trusted directories:
-   ```bash
-   # Note: Only do this on personal/development servers, not production!
-   ```
-4. Initialize the logbook submodule if using:
-   ```bash
-   cd ~
-   git submodule init
-   git submodule update
-   ```
+1. Clone the repository to your preferred location
+2. Run the appropriate sync script based on your needs
+3. Ensure Claude Code CLI is installed and authenticated on the server
+4. Run `claude` from anywhere to use the server management commands
+
+### Updating Configuration
+
+After making changes to the repository:
+```bash
+cd /path/to/Claude-Server-Manager-Template
+git pull  # if pulling updates
+# Make your changes...
+./sync-to-home.sh  # or sync-to-home-and-root.sh
+```
 
 ## Included Slash Commands
 
@@ -146,7 +207,6 @@ Specialized agents for complex administrative tasks (use via Task tool):
 - `.claude/` - Claude Code configuration and commands
 - `context/` - Server context documentation (distro info, configuration)
 - `hw-profile/` - Hardware and GPU benchmark reports
-- `logbook/` - Documentation and troubleshooting notes (submodule)
 
 ## Use Case
 
