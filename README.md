@@ -7,8 +7,8 @@ A template repository for deploying Claude Code configuration to home servers. S
 This template provides a comprehensive Claude Code environment optimized for server administration tasks. It includes:
 
 - Custom `CLAUDE.md` with server-specific context and instructions
-- **36 slash commands** for routine system administration tasks
-- **9 specialized agents** for complex management workflows
+- **38 slash commands** for routine system administration tasks
+- **10 specialized agents** for complex management workflows
 - A logbook submodule for documentation and troubleshooting notes
 - Hardware profiling directory structure
 
@@ -110,8 +110,9 @@ Use these commands by typing them in Claude Code CLI:
 - `/gpu-status` - Check GPU passthrough and NVIDIA GPU status
 - `/proxmox-status` - Check this VM's status from Proxmox host perspective
 
-### System Maintenance
-- `/update-check` - Check for available system updates and security patches
+### System Maintenance & Updates
+- `/check-updates` - Check for available system updates and security patches
+- `/manage-autoupdate` - Review and configure automatic update settings
 - `/verify-github-cli` - Verify GitHub CLI is working correctly
 
 ### Documentation & Profiling
@@ -136,6 +137,9 @@ Specialized agents for complex administrative tasks (use via Task tool):
 - **deployment-manager** - Manage Docker deployments following atomic deployment principle
 - **tunnel-manager** - Manage and troubleshoot Cloudflare Tunnel connectivity
 - **storage-manager** - Manage XFS filesystems, RAID arrays, NAS, and cloud storage
+
+### Documentation
+- **server-documentarian** - Create comprehensive documentation for debugging operations, server configuration, bug reports, and work logs
 
 ## Directory Structure
 
