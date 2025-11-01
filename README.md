@@ -20,6 +20,28 @@ Before deploying, you will need to:
 
 This repository demonstrates the pattern of creating a comprehensive Claude Code environment for server administration. Use it as a reference and starting point, but customize it thoroughly for your own needs.
 
+## Suggested Setup Workflow
+
+Create a private repository from this template for each machine you wish to manage.
+
+![alt text](screenshots/1.png)
+
+Clone your copy on the remote:
+
+![alt text](screenshots/2.png)
+
+Run the propagation script to copy in the slash commands, CLAUDE.md and subagents:
+
+![alt text](screenshots/3.png)
+
+Files should copy in an instant:
+
+![alt text](screenshots/4.png)
+
+Slashes are now available:
+
+![alt text](screenshots/5.png)
+
 ## Purpose
 
 This template provides a comprehensive Claude Code environment optimized for server administration tasks. It includes:
