@@ -27,16 +27,103 @@ if ! sudo -v; then
     exit 1
 fi
 
+# Function to prompt user for action
+prompt_action() {
+    local file_desc="$1"
+    local default="$2"
+    echo ""
+    echo "Existing $file_desc found at target location."
+    echo "How would you like to proceed?"
+    echo "  [o] Overwrite - Replace with new version"
+    echo "  [m] Merge - Keep existing and add new items"
+    echo "  [d] Destructively overwrite - Delete existing and replace"
+    echo "  [s] Skip - Keep existing, don't sync"
+
+    if [ -n "$default" ]; then
+        echo "  (default: $default)"
+        read -p "Choice [o/m/d/s]: " -r choice
+        choice=${choice:-$default}
+    else
+        read -p "Choice [o/m/d/s]: " -r choice
+    fi
+
+    echo "$choice"
+}
+
 echo "=== Syncing to $HOME ==="
 echo ""
 
 # Sync CLAUDE.md to home
 echo "Syncing CLAUDE.md to home..."
-cp -v "$REPO_DIR/CLAUDE.md" "$HOME/CLAUDE.md"
+if [ -f "$HOME/CLAUDE.md" ]; then
+    action=$(prompt_action "CLAUDE.md" "o")
+    case "$action" in
+        o|O)
+            echo "Overwriting CLAUDE.md..."
+            cp -v "$REPO_DIR/CLAUDE.md" "$HOME/CLAUDE.md"
+            ;;
+        m|M)
+            echo "Merging not supported for CLAUDE.md (it's a single file). Use overwrite or skip."
+            echo "Defaulting to overwrite..."
+            cp -v "$REPO_DIR/CLAUDE.md" "$HOME/CLAUDE.md"
+            ;;
+        d|D)
+            echo "Destructively overwriting CLAUDE.md..."
+            rm -f "$HOME/CLAUDE.md"
+            cp -v "$REPO_DIR/CLAUDE.md" "$HOME/CLAUDE.md"
+            ;;
+        s|S)
+            echo "Skipping CLAUDE.md..."
+            ;;
+        *)
+            echo "Invalid choice. Skipping CLAUDE.md..."
+            ;;
+    esac
+else
+    cp -v "$REPO_DIR/CLAUDE.md" "$HOME/CLAUDE.md"
+fi
 
 # Sync .claude directory to home
+echo ""
 echo "Syncing .claude directory to home..."
-rsync -av --delete "$REPO_DIR/.claude/" "$HOME/.claude/"
+
+if [ -d "$HOME/.claude" ]; then
+    # Check what exists in .claude
+    has_commands=false
+    has_agents=false
+    [ -d "$HOME/.claude/commands" ] && has_commands=true
+    [ -d "$HOME/.claude/agents" ] && has_agents=true
+
+    if [ "$has_commands" = true ] || [ "$has_agents" = true ]; then
+        action=$(prompt_action ".claude directory (commands/agents)" "m")
+        case "$action" in
+            o|O)
+                echo "Overwriting .claude directory..."
+                rsync -av "$REPO_DIR/.claude/" "$HOME/.claude/"
+                ;;
+            m|M)
+                echo "Merging .claude directory (keeping existing, adding new)..."
+                rsync -av "$REPO_DIR/.claude/" "$HOME/.claude/"
+                echo "Merge complete. Existing files were preserved, new files were added."
+                ;;
+            d|D)
+                echo "Destructively overwriting .claude directory..."
+                rsync -av --delete "$REPO_DIR/.claude/" "$HOME/.claude/"
+                ;;
+            s|S)
+                echo "Skipping .claude directory..."
+                ;;
+            *)
+                echo "Invalid choice. Skipping .claude directory..."
+                ;;
+        esac
+    else
+        # .claude exists but is empty or has no commands/agents
+        rsync -av "$REPO_DIR/.claude/" "$HOME/.claude/"
+    fi
+else
+    rsync -av "$REPO_DIR/.claude/" "$HOME/.claude/"
+fi
 
 # Check for hw-profile directory
 if [ -d "$REPO_DIR/hw-profile" ]; then
@@ -55,11 +142,75 @@ echo ""
 
 # Sync CLAUDE.md to root
 echo "Syncing CLAUDE.md to /..."
-sudo cp -v "$REPO_DIR/CLAUDE.md" "/CLAUDE.md"
+if [ -f "/CLAUDE.md" ]; then
+    action=$(prompt_action "CLAUDE.md at /" "o")
+    case "$action" in
+        o|O)
+            echo "Overwriting /CLAUDE.md..."
+            sudo cp -v "$REPO_DIR/CLAUDE.md" "/CLAUDE.md"
+            ;;
+        m|M)
+            echo "Merging not supported for CLAUDE.md (it's a single file). Use overwrite or skip."
+            echo "Defaulting to overwrite..."
+            sudo cp -v "$REPO_DIR/CLAUDE.md" "/CLAUDE.md"
+            ;;
+        d|D)
+            echo "Destructively overwriting /CLAUDE.md..."
+            sudo rm -f "/CLAUDE.md"
+            sudo cp -v "$REPO_DIR/CLAUDE.md" "/CLAUDE.md"
+            ;;
+        s|S)
+            echo "Skipping /CLAUDE.md..."
+            ;;
+        *)
+            echo "Invalid choice. Skipping /CLAUDE.md..."
+            ;;
+    esac
+else
+    sudo cp -v "$REPO_DIR/CLAUDE.md" "/CLAUDE.md"
+fi
 
 # Sync .claude directory to root
+echo ""
 echo "Syncing .claude directory to /..."
-sudo rsync -av --delete "$REPO_DIR/.claude/" "/.claude/"
+
+if [ -d "/.claude" ]; then
+    # Check what exists in /.claude
+    has_commands=false
+    has_agents=false
+    [ -d "/.claude/commands" ] && has_commands=true
+    [ -d "/.claude/agents" ] && has_agents=true
+
+    if [ "$has_commands" = true ] || [ "$has_agents" = true ]; then
+        action=$(prompt_action ".claude directory at / (commands/agents)" "m")
+        case "$action" in
+            o|O)
+                echo "Overwriting /.claude directory..."
+                sudo rsync -av "$REPO_DIR/.claude/" "/.claude/"
+                ;;
+            m|M)
+                echo "Merging /.claude directory (keeping existing, adding new)..."
+                sudo rsync -av "$REPO_DIR/.claude/" "/.claude/"
+                echo "Merge complete. Existing files were preserved, new files were added."
+                ;;
+            d|D)
+                echo "Destructively overwriting /.claude directory..."
+                sudo rsync -av --delete "$REPO_DIR/.claude/" "/.claude/"
+                ;;
+            s|S)
+                echo "Skipping /.claude directory..."
+                ;;
+            *)
+                echo "Invalid choice. Skipping /.claude directory..."
+                ;;
+        esac
+    else
+        # /.claude exists but is empty or has no commands/agents
+        sudo rsync -av "$REPO_DIR/.claude/" "/.claude/"
+    fi
+else
+    sudo rsync -av "$REPO_DIR/.claude/" "/.claude/"
+fi
 
 # Create hw-profile symlink at root if needed
 if [ -d "$REPO_DIR/hw-profile" ]; then
