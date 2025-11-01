@@ -6,7 +6,7 @@
 
 A template repository for deploying Claude Code configuration to home servers. This template was created based on my specific server environment and use cases, so you'll want to customize it for your own setup.
 
-## Customization Required
+# Important: Customization Required
 
 **Important:** This repository provides a pattern and starting point - it should not be deployed without customization. It was created based on my specific server environment and is intended as a model to demonstrate the approach.
 
@@ -20,11 +20,15 @@ Before deploying, you will need to:
 
 This repository demonstrates the pattern of creating a comprehensive Claude Code environment for server administration. Use it as a reference and starting point, but customize it thoroughly for your own needs.
 
-## Suggested Setup Workflow
+# Suggested Setup Workflow
+
+## Create private repo from this template
 
 Create a private repository from this template for each machine you wish to manage.
 
 ![alt text](screenshots/1.png)
+
+## Clone and sync commands
 
 Clone your copy on the remote:
 
@@ -42,7 +46,9 @@ Slashes are now available:
 
 ![alt text](screenshots/5.png)
 
-## Purpose
+---
+
+# Purpose
 
 This template provides a comprehensive Claude Code environment optimized for server administration tasks. It includes:
 
